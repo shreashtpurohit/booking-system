@@ -6,6 +6,7 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 model City {
   id     String  @id @default(uuid())
   name   String
@@ -19,4 +20,29 @@ model Venue {
   name    String
   address String
   screens Screen[]
+}
+model Screen {
+  id      String @id @default(uuid())
+  venueId String
+  venue   Venue  @relation(fields: [venueId], references: [id])
+  name    String
+  seats   Seat[]
+}
+
+enum SeatType {
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+model Seat {
+  id         String   @id @default(uuid())
+  screenId   String
+  screen     Screen   @relation(fields: [screenId], references: [id])
+  rowLabel   String
+  seatNumber Int
+  seatType   SeatType @default(SILVER)
+
+  @@unique([screenId, rowLabel, seatNumber])
+  @@index([screenId])
 }
