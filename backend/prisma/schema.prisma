@@ -42,7 +42,30 @@ model Seat {
   rowLabel   String
   seatNumber Int
   seatType   SeatType @default(SILVER)
+  bookingSeats BookingSeat[]
 
   @@unique([screenId, rowLabel, seatNumber])
   @@index([screenId])
+}
+model Movie {
+  id              String  @id @default(uuid())
+  title           String
+  durationMinutes Int
+  posterUrl       String?
+  shows           Show[]
+}
+
+model Show {
+  id        String   @id @default(uuid())
+  movieId   String
+  movie     Movie    @relation(fields: [movieId], references: [id])
+  screenId  String
+  screen    Screen   @relation(fields: [screenId], references: [id])
+  startTime DateTime
+  endTime   DateTime
+  basePrice Decimal  @db.Decimal(10, 2)
+  bookings        Booking[]
+  waitlistEntries WaitlistEntry[]
+
+  @@index([screenId, startTime])
 }
