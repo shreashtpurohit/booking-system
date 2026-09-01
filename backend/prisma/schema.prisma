@@ -6,3 +6,17 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+model City {
+  id     String  @id @default(uuid())
+  name   String
+  venues Venue[]
+}
+
+model Venue {
+  id      String  @id @default(uuid())
+  cityId  String
+  city    City    @relation(fields: [cityId], references: [id])
+  name    String
+  address String
+  screens Screen[]
+}
