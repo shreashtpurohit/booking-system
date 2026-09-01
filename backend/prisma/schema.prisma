@@ -69,3 +69,85 @@ model Show {
 
   @@index([screenId, startTime])
 }
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id              String          @id @default(uuid())
+  email           String          @unique
+  passwordHash    String
+  role            Role            @default(USER)
+  bookings        Booking[]
+  waitlistEntries WaitlistEntry[]
+  createdAt       DateTime        @default(now())
+}
+enum BookingStatus {
+  HELD
+  CONFIRMED
+  CANCELLED
+  EXPIRED
+}
+
+model Booking {
+  id             String        @id @default(uuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id])
+  showId         String
+  show           Show          @relation(fields: [showId], references: [id])
+  status         BookingStatus @default(HELD)
+  totalAmount    Decimal       @db.Decimal(10, 2)
+  idempotencyKey String        @unique
+  bookingSeats   BookingSeat[]
+  payment        Payment?
+  createdAt      DateTime      @default(now())
+
+  @@index([showId])
+  @@index([userId])
+}
+model BookingSeat {
+  id        String  @id @default(uuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id])
+  seatId    String
+  seat      Seat    @relation(fields: [seatId], references: [id])
+
+  @@unique([bookingId, seatId])
+  @@index([seatId])
+}
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  bookingId      String        @unique
+  booking        Booking       @relation(fields: [bookingId], references: [id])
+  amount         Decimal       @db.Decimal(10, 2)
+  status         PaymentStatus @default(PENDING)
+  gatewayTxnId   String?
+  idempotencyKey String        @unique
+  createdAt      DateTime      @default(now())
+}
+enum WaitlistStatus {
+  WAITING
+  OFFERED
+  CLAIMED
+  EXPIRED
+}
+
+model WaitlistEntry {
+  id        String         @id @default(uuid())
+  showId    String
+  show      Show           @relation(fields: [showId], references: [id])
+  userId    String
+  user      User           @relation(fields: [userId], references: [id])
+  seatCount Int
+  status    WaitlistStatus @default(WAITING)
+  createdAt DateTime       @default(now())
+
+  @@index([showId, status])
+}
