@@ -27,6 +27,7 @@ model Screen {
   venue   Venue  @relation(fields: [venueId], references: [id])
   name    String
   seats   Seat[]
+  shows   Show[]
 }
 
 enum SeatType {
